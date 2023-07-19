@@ -2,17 +2,14 @@ package io.berndruecker.demo.processlandscape.rest;
 
 import io.berndruecker.demo.processlandscape.metadata.ProcessMetadata;
 import io.berndruecker.demo.processlandscape.metadata.ServiceTaskMetadata;
+import io.berndruecker.demo.processlandscape.metadata.UserTaskMetadata;
 import io.berndruecker.demo.processlandscape.repo.ModelInformationRepository;
-import org.camunda.community.webmodeler.client.springboot.CamundaWebModelerApi;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ServerWebExchange;
 
 import java.util.List;
 
@@ -41,5 +38,10 @@ public class ProcessLandscapeRestController {
   @GetMapping("/systems/{id}/usage")
   public ResponseEntity<List<ServiceTaskMetadata>> getSystem(@PathVariable("id") String systemId) {
     return ResponseEntity.ok(repository.getSystemUsage(systemId));
+  }
+
+  @GetMapping("/users/{id}/usage")
+  public ResponseEntity<List<UserTaskMetadata>> getAssignment(@PathVariable("id") String assignment) {
+    return ResponseEntity.ok(repository.getUserUsage(assignment));
   }
 }

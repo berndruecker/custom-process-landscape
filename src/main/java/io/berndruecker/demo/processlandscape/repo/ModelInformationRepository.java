@@ -4,11 +4,15 @@ import io.berndruecker.demo.processlandscape.metadata.CallActicityMetadata;
 import io.berndruecker.demo.processlandscape.metadata.CalledProcessMetadata;
 import io.berndruecker.demo.processlandscape.metadata.ProcessMetadata;
 import io.berndruecker.demo.processlandscape.metadata.ServiceTaskMetadata;
+import io.berndruecker.demo.processlandscape.metadata.UserTaskMetadata;
 import io.camunda.zeebe.model.bpmn.BpmnModelInstance;
 import io.camunda.zeebe.model.bpmn.instance.BaseElement;
 import io.camunda.zeebe.model.bpmn.instance.CallActivity;
+import io.camunda.zeebe.model.bpmn.instance.Lane;
 import io.camunda.zeebe.model.bpmn.instance.Process;
 import io.camunda.zeebe.model.bpmn.instance.ServiceTask;
+import io.camunda.zeebe.model.bpmn.instance.UserTask;
+import io.camunda.zeebe.model.bpmn.instance.zeebe.ZeebeAssignmentDefinition;
 import io.camunda.zeebe.model.bpmn.instance.zeebe.ZeebeCalledElement;
 import io.camunda.zeebe.model.bpmn.instance.zeebe.ZeebeProperties;
 import io.camunda.zeebe.model.bpmn.instance.zeebe.ZeebeProperty;
@@ -28,6 +32,7 @@ public class ModelInformationRepository {
     private Map<String, String> processXmlById = new HashMap<>();
     private Map<String, Map<String, String>> processIdByBaseIdAndVariant = new HashMap<>();
     private Map<String, List<ServiceTaskMetadata>> serviceTasksBySystemId = new HashMap<>();
+    private Map<String, List<UserTaskMetadata>> userTasksByAssignment = new HashMap<>();
 
     public static String PROPERTY_NAME_TOP_LEVEL = "topLevel";
     public static String PROPERTY_NAME_VARIANT = "variant";
@@ -82,7 +87,7 @@ public class ModelInformationRepository {
         }
     }
 
-    private void addCalledProcess(ProcessMetadata process, CallActicityMetadata callActivity, String variant, String processId) {
+    protected void addCalledProcess(ProcessMetadata process, CallActicityMetadata callActivity, String variant, String processId) {
         String processName = processId;
         if (processById.containsKey(processId)) {
             processName = processById.get(processId).name();
@@ -108,6 +113,7 @@ public class ModelInformationRepository {
         );
         retrieveServiceTasks(bpmnModel, metadata);
         retrieveCallActivities(bpmnModel, metadata);
+        retrieveUserTasks(bpmnModel, metadata);
 
         addProcess(metadata);
 
@@ -115,7 +121,7 @@ public class ModelInformationRepository {
         return metadata;
     }
 
-    private void addProcess(ProcessMetadata process) {
+    protected void addProcess(ProcessMetadata process) {
         processById.put(process.id(), process);
 
         if (!processIdByBaseIdAndVariant.containsKey(process.baseIdWithoutVariant())) {
@@ -152,8 +158,39 @@ public class ModelInformationRepository {
         });
     }
 
+    protected void retrieveUserTasks(BpmnModelInstance bpmnModel, ProcessMetadata process) {
+        bpmnModel.getModelElementsByType(UserTask.class).forEach(task -> {
+
+            // TODO: Shall we introduce extension properties?
+            String assignment = null;
+            ZeebeAssignmentDefinition assignmentDef = task.getSingleExtensionElement(ZeebeAssignmentDefinition.class);
+            if (assignmentDef!=null) {
+                System.out.println("Assignment by definition: " + assignmentDef.getAssignee());
+                assignment = assignmentDef.getAssignee();
+            }
+
+            Lane lane = bpmnModel.getModelElementsByType(Lane.class).stream().filter(l -> l.getFlowNodeRefs().contains(task)).findFirst().orElse(null);
+            if (lane!=null) {
+                System.out.println("Assignment by lane: " + lane.getName());
+                assignment = lane.getName();
+            }
+
+            UserTaskMetadata metadata = new UserTaskMetadata(
+                    task.getId(),
+                    task.getName(),
+                    process.id(),
+                    process.name(),
+                    assignment);
+            process.userTasks().add(metadata);
+            if (!userTasksByAssignment.containsKey(metadata.assignment())) {
+                userTasksByAssignment.put(metadata.assignment(), new ArrayList<>());
+            }
+            userTasksByAssignment.get(metadata.assignment()).add(metadata);
+        });
+    }
+
     @NotNull
-    private Process getBpmnProcess(BpmnModelInstance bpmnModel) {
+    protected Process getBpmnProcess(BpmnModelInstance bpmnModel) {
         return bpmnModel.getModelElementsByType(Process.class).stream().findFirst().get();
     }
 
@@ -177,9 +214,14 @@ public class ModelInformationRepository {
         processXmlById = new HashMap<>();
         processIdByBaseIdAndVariant = new HashMap<>();
         serviceTasksBySystemId = new HashMap<>();
+        userTasksByAssignment = new HashMap<>();
     }
 
     public List<ServiceTaskMetadata> getSystemUsage(String systemId) {
         return serviceTasksBySystemId.get(systemId);
+    }
+
+    public List<UserTaskMetadata> getUserUsage(String assignment) {
+        return userTasksByAssignment.get(assignment);
     }
 }

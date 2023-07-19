@@ -122,6 +122,7 @@
 
             addOverlaysServiceTask(overlays, process);
             addOverlaysCallActivities(overlays, process);
+            addOverlaysUserTasks(overlays, process);
 
             if (callback) {
               callback();
@@ -198,6 +199,43 @@
 
        });
   }
+
+  function addOverlaysUserTasks(overlays, process) {
+     process.userTasks.forEach( task => {
+        var overlayHtml = $('<div class="diagram-note"><a href="#" id="link_task_'+task.id+'">' + task.assignment + '</a></div>');
+        overlays.add(task.id, 'SERVICE', {
+              position: {
+                bottom: 0,
+                left: 0
+              },
+              html: overlayHtml
+        });
+        $("#link_task_"+task.id).click(function() {
+          loadAssignment(task.assignment);
+        });
+     });
+   }
+
+   function loadAssignment(assignment) {
+        $("#details").empty();
+
+        $("#details").append("<h2>User/group: " + assignment + "</h2>");
+        $("#details").append("<h2>Also doing: </h2>");
+        $("#details").append("<ul id='usedIn'></ul>");
+        $.get("http://localhost:8080/users/" + assignment + "/usage", function(data, status){
+          console.log(data);
+          $.each(data, function(index, value) {
+            console.log(value);
+            var element = $("#usedIn").append("<li><a id='link_assignment_process_"+value.processId+"' href='#'>" + value.processName + " -> " + value.name + "</a></li>");
+            element.click(function() {
+              loadProcess(value.processId, function() {
+                bpmnViewer.get('canvas').addMarker(value.id, 'highlight');
+              });
+            });
+          });
+        });
+   }
+
 
   loadTopLevelProcesses();
     </script>
