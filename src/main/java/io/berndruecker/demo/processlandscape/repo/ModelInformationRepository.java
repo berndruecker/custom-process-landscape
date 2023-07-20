@@ -75,8 +75,10 @@ public class ModelInformationRepository {
                             processBaseId = processBaseId.substring(0, processBaseId.length() - 1);
                         }
                         Map<String, String> processIdByVariant = processIdByBaseIdAndVariant.get(processBaseId);
-                        for (Map.Entry<String, String> entry : processIdByVariant.entrySet()) {
-                            addCalledProcess(process, callActivity, entry.getKey(), entry.getValue());
+                        if (processIdByVariant!=null) {
+                            for (Map.Entry<String, String> entry : processIdByVariant.entrySet()) {
+                                addCalledProcess(process, callActivity, entry.getKey(), entry.getValue());
+                            }
                         }
                     } else {
                         // no expression, just use the process linked as default variant

@@ -10,6 +10,7 @@ import org.camunda.community.webmodeler.client.invoker.ApiException;
 import org.camunda.community.webmodeler.client.springboot.CamundaWebModelerApi;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayInputStream;
@@ -17,8 +18,8 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 @Component
+@ConditionalOnProperty(name = "landscape.repository", havingValue = "webmodeler")
 public class WebModelerLoader {
-
 
     @Autowired
     private CamundaWebModelerApi camundaWebModelerApi;

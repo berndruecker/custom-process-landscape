@@ -110,12 +110,13 @@
         $("#details").append("<ul id='usedIn'></ul>");
         $.get("http://localhost:8080/systems/" + systemId + "/usage", function(data, status){
           console.log(data);
-          $.each(data, function(index, value) {
-            console.log(value);
-            var element = $("#usedIn").append("<li><a id='link_system_process_"+value.processId+"' href='#'>" + value.processName + " -> " + value.name + "</a></li>");
-            element.click(function() {
-              loadProcess(value.processId, function() {
-                bpmnViewer.get('canvas').addMarker(value.id, 'highlight');
+          $.each(data, function(index, serviceTask) {
+            console.log(serviceTask);
+            var element = $("#usedIn").append("<li><a id='link_system_process_"+serviceTask.processId+"' href='#'>" + serviceTask.processName + " -> " + serviceTask.name + "</a></li>");
+            $("#link_system_process_"+serviceTask.processId).click(function() {
+              loadProcess(serviceTask.processId, function() {
+                bpmnViewer.get('canvas').addMarker(serviceTask.id, 'highlight');
+                loadSystem(serviceTask.system);
               });
             });
           });
