@@ -54,5 +54,6 @@ jobs:
       - name: Build and Push Docker Image tag SNAPSHOT
         uses: docker/build-push-action@v4
         with:
+          context: .
           push: ${{ github.ref == 'refs/heads/main' }}
           tags: berndruecker/custom-process-landscape:SNAPSHOT
