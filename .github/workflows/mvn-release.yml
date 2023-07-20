@@ -1,17 +1,7 @@
-# If this workflow is triggered by a push to $default_branch, it
-#        deploys a SNAPSHOT
-# If this workflow is triggered by publishing a Release, it
-#        deploys a RELEASE with the selected version
-#        updates the project version by incrementing the patch version
-#        commits the version update change to the repository's default branch.
 name: Build artifacts and deploy on DockerHub
-
-on:
-  push
-  release:
-    types: [ published ]
-  pull_request
+on: [push, release, pull_request]
 jobs:
+
   publish:
     runs-on: ubuntu-20.04
     steps:
