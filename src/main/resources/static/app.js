@@ -1,5 +1,6 @@
 
-  vas baseUrl = "/"; // http://localhost:8080/
+  //var baseUrl = "http://localhost:8080/";
+  var baseUrl = "/";
 
   function loadTopLevelProcesses() {
     $.get(baseUrl + "processes", function(data, status){
@@ -53,7 +54,7 @@
 
   function loadDiagram(process, callback) {
 
-        var diagramUrl = 'baseUrl + "processes/' + process.id + '/xml';
+        var diagramUrl = baseUrl + "processes/" + process.id + "/xml";
 
         /**
          * Open diagram in our viewer instance.
