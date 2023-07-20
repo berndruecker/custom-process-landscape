@@ -1,6 +1,8 @@
 
+  vas baseUrl = "/"; // http://localhost:8080/
+
   function loadTopLevelProcesses() {
-    $.get("http://localhost:8080/processes", function(data, status){
+    $.get(baseUrl + "processes", function(data, status){
       console.log(data);
 
       $.each(data, function(index, value) {
@@ -23,7 +25,7 @@
   }
 
   function loadProcess(processId, callback) {
-    $.get("http://localhost:8080/processes/" + processId, function(data, status){
+    $.get(baseUrl + "processes/" + processId, function(data, status){
       console.log(data);
       selectProcess(data, callback);
     });
@@ -51,7 +53,7 @@
 
   function loadDiagram(process, callback) {
 
-        var diagramUrl = 'http://localhost:8080/processes/' + process.id + '/xml';
+        var diagramUrl = 'baseUrl + "processes/' + process.id + '/xml';
 
         /**
          * Open diagram in our viewer instance.
@@ -108,7 +110,7 @@
         $("#details").append("<p>System: <b>" + systemId + "</b></p>");
         $("#details").append("<p>Also used in: </p>");
         $("#details").append("<ul id='usedIn'></ul>");
-        $.get("http://localhost:8080/systems/" + systemId + "/usage", function(data, status){
+        $.get(baseUrl + "systems/" + systemId + "/usage", function(data, status){
           console.log(data);
           $.each(data, function(index, serviceTask) {
             console.log(serviceTask);
@@ -172,7 +174,7 @@
         $("#details").append("<p>User/group: <b>" + assignment + "</b></p>");
         $("#details").append("<p>Also doing: </p>");
         $("#details").append("<ul id='usedIn'></ul>");
-        $.get("http://localhost:8080/users/" + assignment + "/usage", function(data, status){
+        $.get(baseUrl + "users/" + assignment + "/usage", function(data, status){
           console.log(data);
           $.each(data, function(index, value) {
             console.log(value);
@@ -185,6 +187,5 @@
           });
         });
    }
-
 
   loadTopLevelProcesses();
