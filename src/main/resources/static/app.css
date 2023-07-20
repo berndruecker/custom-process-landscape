@@ -1,0 +1,36 @@
+ html, body, #canvas {
+        height: 100%;
+        padding: 0;
+        margin: 0;
+      }
+
+      .diagram-note {
+        background-color: lightsteelblue;
+        color: White;
+        border-radius: 5px;
+        font-family: Arial;
+        font-size: 12px;
+        padding: 5px;
+        min-height: 16px;
+        width: max-content;
+      }
+
+      .highlight:not(.djs-connection) .djs-visual > :nth-child(1) {
+        fill: yellow !important;
+      }
+
+ul.processList li {
+    list-style:none;
+}
+
+body {
+  font-size: .875rem;
+}
+
+/*
+ * Utilities
+
+
+.border-top { border-top: 1px solid #e5e5e5; }
+.border-bottom { border-bottom: 1px solid #e5e5e5; }
+*/
