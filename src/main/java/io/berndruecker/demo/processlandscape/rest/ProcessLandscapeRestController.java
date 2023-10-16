@@ -4,6 +4,7 @@ import io.berndruecker.demo.processlandscape.metadata.ProcessMetadata;
 import io.berndruecker.demo.processlandscape.metadata.ServiceTaskMetadata;
 import io.berndruecker.demo.processlandscape.metadata.UserTaskMetadata;
 import io.berndruecker.demo.processlandscape.repo.ModelInformationRepository;
+import io.berndruecker.demo.processlandscape.repo.WebModelerLoader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -43,5 +44,15 @@ public class ProcessLandscapeRestController {
   @GetMapping("/users/{id}/usage")
   public ResponseEntity<List<UserTaskMetadata>> getAssignment(@PathVariable("id") String assignment) {
     return ResponseEntity.ok(repository.getUserUsage(assignment));
+  }
+
+  @Autowired
+  private WebModelerLoader loader;
+
+  @GetMapping("/reload")
+  public ResponseEntity<String> reload() throws Exception {
+    long millis = System.currentTimeMillis();
+    loader.loadModels();
+    return ResponseEntity.ok("Reloaded in " + (System.currentTimeMillis() - millis) + " ms");
   }
 }

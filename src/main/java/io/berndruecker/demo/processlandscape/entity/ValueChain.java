@@ -12,18 +12,6 @@ public class ValueChain {
 
     private String name;
 
-    @OneToOne
-    private ProcessDefinition processDefinition;
-
-    public ProcessDefinition getProcessDefinition() {
-        return processDefinition;
-    }
-
-    public ValueChain setProcessDefinition(ProcessDefinition processDefinition) {
-        this.processDefinition = processDefinition;
-        return this;
-    }
-
     public String getId() {
         return id;
     }

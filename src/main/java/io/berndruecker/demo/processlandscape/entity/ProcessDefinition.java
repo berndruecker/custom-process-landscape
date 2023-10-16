@@ -2,7 +2,6 @@ package io.berndruecker.demo.processlandscape.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
 
 @Entity
 public class ProcessDefinition {
@@ -16,9 +15,6 @@ public class ProcessDefinition {
     private String variant;
     private String type;
     private boolean isValueChain;
-
-    @ManyToOne
-    private ValueChain valueChain;
 
     public void deriveBaseIdWithoutVariant() {
         if (id!=null && variant != null && id.indexOf(variant)>0) {
@@ -68,15 +64,6 @@ public class ProcessDefinition {
 
     public ProcessDefinition setType(String type) {
         this.type = type;
-        return this;
-    }
-
-    public ValueChain getValueChain() {
-        return valueChain;
-    }
-
-    public ProcessDefinition setValueChain(ValueChain valueChain) {
-        this.valueChain = valueChain;
         return this;
     }
 

@@ -145,8 +145,7 @@ public class ModelInformationRepository {
             valueChainRepository.save(
                     new ValueChain()
                         .setId(bpmn.getId())
-                        .setName(bpmn.getName())
-                        .setProcessDefinition(processDefinition));
+                        .setName(bpmn.getName()));
         }
 
         ProcessMetadata metadata = new ProcessMetadata(
@@ -305,6 +304,13 @@ public class ModelInformationRepository {
     }
 
     public void reset() {
+        taskRepository.deleteAll();
+        processRepository.deleteAll();
+        valueChainRepository.deleteAll();
+        systemRepository.deleteAll();
+        userRoleRepository.deleteAll();
+        formRepository.deleteAll();
+
         processById = new HashMap<>();
         processXmlById = new HashMap<>();
         processIdByBaseIdAndVariant = new HashMap<>();
