@@ -24,7 +24,20 @@
 </head>
 <body>
 <!-- Style from https://getbootstrap.com/docs/4.0/examples/dashboard/ -->
+
+
 <div class="container" style="max-width: 100%;">
+  <div class="row">
+    <div class="col-md-12">
+      Want to inspect all data via SQL database?
+      Please go to <a href="/db">http://localhost:8080/db</a> and make sure to use the following connection parameters:
+      <ul>
+        <li>JDBC URL: <code>jdbc:h2:mem:process-landscape</code></li>
+        <li>User: <code>sa</code></li>
+        <li>Password: <code></code></li>
+      </ul>
+    <div>
+  </div>
   <div class="row">
     <div class="col-md-2 bg-light ">
         <h1 class="h2">Processes</h1>

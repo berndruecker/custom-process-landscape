@@ -3,6 +3,7 @@ package io.berndruecker.demo.processlandscape.metadata;
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 public record ProcessMetadata(
         String id,
         String name,

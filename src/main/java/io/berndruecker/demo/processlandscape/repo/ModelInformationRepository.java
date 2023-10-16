@@ -1,5 +1,17 @@
 package io.berndruecker.demo.processlandscape.repo;
 
+import io.berndruecker.demo.processlandscape.entity.FormDefinition;
+import io.berndruecker.demo.processlandscape.entity.FormRepository;
+import io.berndruecker.demo.processlandscape.entity.ProcessDefinition;
+import io.berndruecker.demo.processlandscape.entity.ProcessRepository;
+import io.berndruecker.demo.processlandscape.entity.SystemDefinition;
+import io.berndruecker.demo.processlandscape.entity.SystemRepository;
+import io.berndruecker.demo.processlandscape.entity.TaskDefinition;
+import io.berndruecker.demo.processlandscape.entity.TaskRepository;
+import io.berndruecker.demo.processlandscape.entity.UserRoleDefinition;
+import io.berndruecker.demo.processlandscape.entity.UserRoleRepository;
+import io.berndruecker.demo.processlandscape.entity.ValueChain;
+import io.berndruecker.demo.processlandscape.entity.ValueChainRepository;
 import io.berndruecker.demo.processlandscape.metadata.CallActicityMetadata;
 import io.berndruecker.demo.processlandscape.metadata.CalledProcessMetadata;
 import io.berndruecker.demo.processlandscape.metadata.ProcessMetadata;
@@ -17,6 +29,7 @@ import io.camunda.zeebe.model.bpmn.instance.zeebe.ZeebeCalledElement;
 import io.camunda.zeebe.model.bpmn.instance.zeebe.ZeebeProperties;
 import io.camunda.zeebe.model.bpmn.instance.zeebe.ZeebeProperty;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -33,6 +46,19 @@ public class ModelInformationRepository {
     private Map<String, Map<String, String>> processIdByBaseIdAndVariant = new HashMap<>();
     private Map<String, List<ServiceTaskMetadata>> serviceTasksBySystemId = new HashMap<>();
     private Map<String, List<UserTaskMetadata>> userTasksByAssignment = new HashMap<>();
+
+    @Autowired
+    private ProcessRepository processRepository;
+    @Autowired
+    private TaskRepository taskRepository;
+    @Autowired
+    private SystemRepository systemRepository;
+    @Autowired
+    private UserRoleRepository userRoleRepository;
+    @Autowired
+    private FormRepository formRepository;
+    @Autowired
+    private ValueChainRepository valueChainRepository;
 
     public static String PROPERTY_NAME_TOP_LEVEL = "topLevel";
     public static String PROPERTY_NAME_VARIANT = "variant";
@@ -107,23 +133,40 @@ public class ModelInformationRepository {
 
     public ProcessMetadata processBpmnModel(BpmnModelInstance bpmnModel) {
         Process bpmn = getBpmnProcess(bpmnModel);
+        ProcessDefinition processDefinition = new ProcessDefinition()
+                .setId(bpmn.getId())
+                .setName(bpmn.getName())
+                .setVariant(findProcessPropertyValue(bpmn, PROPERTY_NAME_VARIANT))
+                .setValueChain(Boolean.valueOf(findProcessPropertyValue(bpmn, PROPERTY_NAME_TOP_LEVEL)));
+        processRepository.save(processDefinition);
+        if (processDefinition.isValueChain()) {
+            valueChainRepository.save(
+                    new ValueChain()
+                        .setId(bpmn.getId())
+                        .setName(bpmn.getName())
+                        .setProcessDefinition(processDefinition));
+        }
+
         ProcessMetadata metadata = new ProcessMetadata(
                 bpmn.getId(),
                 bpmn.getName(),
                 findProcessPropertyValue(bpmn, PROPERTY_NAME_VARIANT),
                 Boolean.valueOf(findProcessPropertyValue(bpmn, PROPERTY_NAME_TOP_LEVEL))
         );
-        retrieveServiceTasks(bpmnModel, metadata);
-        retrieveCallActivities(bpmnModel, metadata);
-        retrieveUserTasks(bpmnModel, metadata);
+        retrieveServiceTasks(bpmnModel, metadata, processDefinition);
+        retrieveCallActivities(bpmnModel, metadata, processDefinition);
+        retrieveUserTasks(bpmnModel, metadata, processDefinition);
+        //retrieveForms();
 
-        addProcess(metadata);
+        addProcess(metadata, processDefinition);
 
         System.out.println(metadata);
         return metadata;
     }
 
-    protected void addProcess(ProcessMetadata process) {
+    protected void addProcess(ProcessMetadata process, ProcessDefinition processDefinition) {
+        processRepository.save(processDefinition);
+
         processById.put(process.id(), process);
 
         if (!processIdByBaseIdAndVariant.containsKey(process.baseIdWithoutVariant())) {
@@ -132,14 +175,24 @@ public class ModelInformationRepository {
         processIdByBaseIdAndVariant.get(process.baseIdWithoutVariant()).put(process.variant(), process.id());
     }
 
-    protected void retrieveServiceTasks(BpmnModelInstance bpmnModel, ProcessMetadata processMetadata) {
+    protected void retrieveServiceTasks(BpmnModelInstance bpmnModel, ProcessMetadata processMetadata, ProcessDefinition processDefinition) {
         bpmnModel.getModelElementsByType(ServiceTask.class).forEach(serviceTask -> {
+
+            TaskDefinition taskDefinition = new TaskDefinition()
+                    .setId(serviceTask.getId())
+                    .setName(serviceTask.getName())
+                    .setType(TaskDefinition.TYPE_SYSTEM)
+                    .setProcess(processDefinition)
+                    .setSystem(getSystem(findProcessPropertyValue(serviceTask, PROPERTY_NAME_SYSTEM)));
+            taskRepository.save(taskDefinition);
+
             ServiceTaskMetadata taskMetadata = new ServiceTaskMetadata(
                     serviceTask.getId(),
                     serviceTask.getName(),
                     processMetadata.id(),
                     processMetadata.name(),
                     findProcessPropertyValue(serviceTask, PROPERTY_NAME_SYSTEM));
+
             processMetadata.serviceTasks().add(taskMetadata);
             if (!serviceTasksBySystemId.containsKey(taskMetadata.system())) {
                 serviceTasksBySystemId.put(taskMetadata.system(), new ArrayList<>());
@@ -148,19 +201,32 @@ public class ModelInformationRepository {
         });
     }
 
-    protected void retrieveCallActivities(BpmnModelInstance bpmnModel, ProcessMetadata processMetadata) {
+
+
+    protected void retrieveCallActivities(BpmnModelInstance bpmnModel, ProcessMetadata processMetadata, ProcessDefinition processDefinition) {
         bpmnModel.getModelElementsByType(CallActivity.class).forEach(task -> {
+            String calledProcessId = task.getSingleExtensionElement(ZeebeCalledElement.class).getProcessId();
+
+            TaskDefinition taskDefinition = new TaskDefinition()
+                    .setId(task.getId())
+                    .setName(task.getName())
+                    .setType(TaskDefinition.TYPE_CALLACTIVITY)
+                    .setProcess(processDefinition)
+                    .setCalledProcessId(calledProcessId);
+            taskRepository.save(taskDefinition);
+
             List<CalledProcessMetadata> calledProcesses = new ArrayList<>();
             CallActicityMetadata metadata = new CallActicityMetadata(
                     task.getId(),
                     task.getName(),
-                    task.getSingleExtensionElement(ZeebeCalledElement.class).getProcessId(),
+                    calledProcessId,
                     calledProcesses);
             processMetadata.callActivities().add(metadata);
         });
     }
 
-    protected void retrieveUserTasks(BpmnModelInstance bpmnModel, ProcessMetadata process) {
+
+    protected void retrieveUserTasks(BpmnModelInstance bpmnModel, ProcessMetadata process, ProcessDefinition processDefinition) {
         bpmnModel.getModelElementsByType(UserTask.class).forEach(task -> {
 
             // TODO: Shall we introduce extension properties?
@@ -176,6 +242,14 @@ public class ModelInformationRepository {
                 System.out.println("Assignment by lane: " + lane.getName());
                 assignment = lane.getName();
             }
+
+            TaskDefinition taskDefinition = new TaskDefinition()
+                    .setId(task.getId())
+                    .setName(task.getName())
+                    .setType(TaskDefinition.TYPE_USER)
+                    .setProcess(processDefinition)
+                    .setUserRole(getUserRoleDefinition(assignment));
+            taskRepository.save(taskDefinition);
 
             UserTaskMetadata metadata = new UserTaskMetadata(
                     task.getId(),
@@ -225,5 +299,33 @@ public class ModelInformationRepository {
 
     public List<UserTaskMetadata> getUserUsage(String assignment) {
         return userTasksByAssignment.get(assignment);
+    }
+
+    public SystemDefinition getSystem(String id) {
+        if (systemRepository.existsById(id)) {
+            return systemRepository.findById(id).get();
+        } else {
+            SystemDefinition systemDefinition = new SystemDefinition().setId(id);
+            systemRepository.save(systemDefinition);
+            return systemDefinition;
+        }
+    }
+    public UserRoleDefinition getUserRoleDefinition(String id) {
+        if (userRoleRepository.existsById(id)) {
+            return userRoleRepository.findById(id).get();
+        } else {
+            UserRoleDefinition userRoleDefinition = new UserRoleDefinition().setId(id);
+            userRoleRepository.save(userRoleDefinition);
+            return userRoleDefinition;
+        }
+    }
+    public FormDefinition getForm(String id) {
+        if (formRepository.existsById(id)) {
+            return formRepository.findById(id).get();
+        } else {
+            FormDefinition systemDefinition = new FormDefinition().setId(id);
+            formRepository.save(systemDefinition);
+            return systemDefinition;
+        }
     }
 }
