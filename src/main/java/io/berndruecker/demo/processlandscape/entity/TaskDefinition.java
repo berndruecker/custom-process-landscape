@@ -27,8 +27,10 @@ public class TaskDefinition {
     private UserRoleDefinition userRole;
     @ManyToOne
     private FormDefinition form;
-    //@ManyToOne
+
+    // Base id of called process (without variant). If no variantes are used - this is the process id
     private String calledProcessId;
+    private String calledProcessExpression;
 
     public String getId() {
         return id;
@@ -95,6 +97,19 @@ public class TaskDefinition {
 
     public TaskDefinition setCalledProcessId(String calledProcessId) {
         this.calledProcessId = calledProcessId;
+        return this;
+    }
+
+    public String getCalledProcessId() {
+        return calledProcessId;
+    }
+
+    public String getCalledProcessExpression() {
+        return calledProcessExpression;
+    }
+
+    public TaskDefinition setCalledProcessExpression(String calledProcessExpression) {
+        this.calledProcessExpression = calledProcessExpression;
         return this;
     }
 }

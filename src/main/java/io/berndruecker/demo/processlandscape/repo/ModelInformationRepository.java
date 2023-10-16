@@ -133,12 +133,14 @@ public class ModelInformationRepository {
 
     public ProcessMetadata processBpmnModel(BpmnModelInstance bpmnModel) {
         Process bpmn = getBpmnProcess(bpmnModel);
+
         ProcessDefinition processDefinition = new ProcessDefinition()
                 .setId(bpmn.getId())
                 .setName(bpmn.getName())
                 .setVariant(findProcessPropertyValue(bpmn, PROPERTY_NAME_VARIANT))
                 .setValueChain(Boolean.valueOf(findProcessPropertyValue(bpmn, PROPERTY_NAME_TOP_LEVEL)));
         processRepository.save(processDefinition);
+
         if (processDefinition.isValueChain()) {
             valueChainRepository.save(
                     new ValueChain()
@@ -206,13 +208,15 @@ public class ModelInformationRepository {
     protected void retrieveCallActivities(BpmnModelInstance bpmnModel, ProcessMetadata processMetadata, ProcessDefinition processDefinition) {
         bpmnModel.getModelElementsByType(CallActivity.class).forEach(task -> {
             String calledProcessId = task.getSingleExtensionElement(ZeebeCalledElement.class).getProcessId();
+            String calledProcessBaseId = getProcessBaseId(calledProcessId);
 
             TaskDefinition taskDefinition = new TaskDefinition()
                     .setId(task.getId())
                     .setName(task.getName())
                     .setType(TaskDefinition.TYPE_CALLACTIVITY)
                     .setProcess(processDefinition)
-                    .setCalledProcessId(calledProcessId);
+                    .setCalledProcessExpression(calledProcessId)
+                    .setCalledProcessId(calledProcessBaseId);
             taskRepository.save(taskDefinition);
 
             List<CalledProcessMetadata> calledProcesses = new ArrayList<>();
@@ -223,6 +227,21 @@ public class ModelInformationRepository {
                     calledProcesses);
             processMetadata.callActivities().add(metadata);
         });
+    }
+
+    private String getProcessBaseId(String calledProcessId) {
+        if (calledProcessId != null && calledProcessId.indexOf("\"")>0 && calledProcessId.indexOf("\"", calledProcessId.indexOf("\"")+1) > 0) {
+            // called element using an expression like
+            // = "process_application_" + variantCreator
+            String processBaseId = calledProcessId.substring(
+                    calledProcessId.indexOf("\"") + 1,
+                    calledProcessId.indexOf("\"", calledProcessId.indexOf("\"") + 1));
+            if (processBaseId.endsWith("_")) {
+                processBaseId = processBaseId.substring(0, processBaseId.length() - 1);
+            }
+            return processBaseId;
+        }
+        return calledProcessId;
     }
 
 
