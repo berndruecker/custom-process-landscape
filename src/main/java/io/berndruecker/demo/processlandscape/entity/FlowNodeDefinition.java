@@ -5,7 +5,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 
 @Entity
-public class TaskDefinition {
+public class FlowNodeDefinition {
 
     @Id
     private String id;
@@ -36,7 +36,7 @@ public class TaskDefinition {
         return id;
     }
 
-    public TaskDefinition setId(String id) {
+    public FlowNodeDefinition setId(String id) {
         this.id = id;
         return this;
     }
@@ -45,7 +45,7 @@ public class TaskDefinition {
         return name;
     }
 
-    public TaskDefinition setName(String name) {
+    public FlowNodeDefinition setName(String name) {
         this.name = name;
         return this;
     }
@@ -54,7 +54,7 @@ public class TaskDefinition {
         return type;
     }
 
-    public TaskDefinition setType(String type) {
+    public FlowNodeDefinition setType(String type) {
         this.type = type;
         return this;
     }
@@ -63,7 +63,7 @@ public class TaskDefinition {
         return process;
     }
 
-    public TaskDefinition setProcess(ProcessDefinition process) {
+    public FlowNodeDefinition setProcess(ProcessDefinition process) {
         this.process = process;
         return this;
     }
@@ -72,7 +72,7 @@ public class TaskDefinition {
         return system;
     }
 
-    public TaskDefinition setSystem(SystemDefinition system) {
+    public FlowNodeDefinition setSystem(SystemDefinition system) {
         this.system = system;
         return this;
     }
@@ -81,7 +81,7 @@ public class TaskDefinition {
         return userRole;
     }
 
-    public TaskDefinition setUserRole(UserRoleDefinition userRole) {
+    public FlowNodeDefinition setUserRole(UserRoleDefinition userRole) {
         this.userRole = userRole;
         return this;
     }
@@ -90,12 +90,12 @@ public class TaskDefinition {
         return form;
     }
 
-    public TaskDefinition setForm(FormDefinition form) {
+    public FlowNodeDefinition setForm(FormDefinition form) {
         this.form = form;
         return this;
     }
 
-    public TaskDefinition setCalledProcessId(String calledProcessId) {
+    public FlowNodeDefinition setCalledProcessId(String calledProcessId) {
         this.calledProcessId = calledProcessId;
         return this;
     }
@@ -108,7 +108,7 @@ public class TaskDefinition {
         return calledProcessExpression;
     }
 
-    public TaskDefinition setCalledProcessExpression(String calledProcessExpression) {
+    public FlowNodeDefinition setCalledProcessExpression(String calledProcessExpression) {
         this.calledProcessExpression = calledProcessExpression;
         return this;
     }

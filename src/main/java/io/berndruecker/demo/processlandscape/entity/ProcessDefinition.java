@@ -16,6 +16,8 @@ public class ProcessDefinition {
     private String type;
     private boolean isValueChain;
 
+    private String parentProcessDefinitionId;
+
     public void deriveBaseIdWithoutVariant() {
         if (id!=null && variant != null && id.indexOf(variant)>0) {
             baseIdWithoutVariant = id.substring(0, id.lastIndexOf(variant));
@@ -74,5 +76,17 @@ public class ProcessDefinition {
     public ProcessDefinition setValueChain(boolean valueChain) {
         isValueChain = valueChain;
         return this;
+    }
+
+    public void setBaseIdWithoutVariant(String baseIdWithoutVariant) {
+        this.baseIdWithoutVariant = baseIdWithoutVariant;
+    }
+
+    public String getParentProcessDefinitionId() {
+        return parentProcessDefinitionId;
+    }
+
+    public void setParentProcessDefinitionId(String parentProcessDefinitionId) {
+        this.parentProcessDefinitionId = parentProcessDefinitionId;
     }
 }
