@@ -202,6 +202,12 @@ public class ModelInformationRepository {
                     .setName(flowNode.getName())
                     .setType(flowNode.getElementType().getTypeName())
                     .setProcess(processDefinition);
+
+            Lane lane = bpmnModel.getModelElementsByType(Lane.class).stream().filter(l -> l.getFlowNodeRefs().contains(flowNode)).findFirst().orElse(null);
+            if (lane!=null) {
+                taskDefinition.setLane(lane.getName());
+            }
+
             if (ServiceTask.class == flowNode.getElementType().getInstanceType()) {
                 taskDefinition.setSystem(getSystem(findProcessPropertyValue(flowNode, PROPERTY_NAME_SYSTEM)));
             }
@@ -222,10 +228,9 @@ public class ModelInformationRepository {
                     assignment = assignmentDef.getAssignee();
                 }
 
-                Lane lane = bpmnModel.getModelElementsByType(Lane.class).stream().filter(l -> l.getFlowNodeRefs().contains(flowNode)).findFirst().orElse(null);
-                if (lane!=null) {
+                if (taskDefinition.getLane()!=null) {
                     System.out.println("Assignment by lane: " + lane.getName());
-                    assignment = lane.getName();
+                    assignment = taskDefinition.getLane();
                 }
 
                 taskDefinition.setUserRole(getUserRoleDefinition(assignment));

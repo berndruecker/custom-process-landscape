@@ -18,6 +18,8 @@ public class FlowNodeDefinition {
     public static final String TYPE_USER = "USER";
     public static final String TYPE_CALLACTIVITY = "SUBPROCESS";
 
+    private String lane;
+
     @ManyToOne
     private ProcessDefinition process;
 
@@ -31,6 +33,14 @@ public class FlowNodeDefinition {
     // Base id of called process (without variant). If no variantes are used - this is the process id
     private String calledProcessId;
     private String calledProcessExpression;
+
+    public String getLane() {
+        return lane;
+    }
+
+    public void setLane(String lane) {
+        this.lane = lane;
+    }
 
     public String getId() {
         return id;
