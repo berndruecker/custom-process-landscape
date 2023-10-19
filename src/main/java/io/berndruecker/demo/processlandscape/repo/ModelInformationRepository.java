@@ -209,7 +209,10 @@ public class ModelInformationRepository {
             }
 
             if (ServiceTask.class == flowNode.getElementType().getInstanceType()) {
-                taskDefinition.setSystem(getSystem(findProcessPropertyValue(flowNode, PROPERTY_NAME_SYSTEM)));
+                String systemId = findProcessPropertyValue(flowNode, PROPERTY_NAME_SYSTEM);
+                if (systemId!=null) {
+                    taskDefinition.setSystem(getSystem(systemId));
+                }
             }
             if (CallActivity.class == flowNode.getElementType().getInstanceType()) {
                 String calledProcessId = flowNode.getSingleExtensionElement(ZeebeCalledElement.class).getProcessId();
